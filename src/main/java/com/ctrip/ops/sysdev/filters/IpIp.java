@@ -67,8 +67,6 @@ public class IpIp extends BaseFilter {
         if (event.containsKey(this.source)) {
 
             boolean success = true;
-            System.out.println(this.source);
-
 
             String[] strings = IpIp.find((String)event.get(this.source));
 
