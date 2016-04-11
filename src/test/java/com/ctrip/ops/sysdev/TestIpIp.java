@@ -49,5 +49,21 @@ public class TestIpIp {
 		event = ipip.process(event);
 		Assert.assertNull(event.get(config.get("target")));
 
+
+		event = new HashMap();
+		event.put("remote_addr", "121.59.11.14");
+
+
+		long p1 = System.currentTimeMillis();
+		for(int i = 0 ; i < 10; i++){
+
+				ipip.process(event);
+
+		}
+		long p2 = System.currentTimeMillis();
+		System.out.println("!!!!!!!!");
+		System.out.println(p2-p1);
+		System.out.println("!!!!!!!!");
+
 	}
 }

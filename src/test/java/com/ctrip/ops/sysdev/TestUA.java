@@ -28,11 +28,7 @@ public class TestUA {
 
 		event = UAfilter.process(event);
 		Assert.assertEquals(event.get("userAgent_family"), "Mobile Safari");
-		Assert.assertEquals(event.get("userAgent_major"), "5");
-		Assert.assertEquals(event.get("userAgent_minor"), "1");
 		Assert.assertEquals(event.get("os_family"), "iOS");
-		Assert.assertEquals(event.get("os_major"), "5");
-		Assert.assertEquals(event.get("os_minor"), "1");
 		Assert.assertEquals(event.get("device_family"), "iPhone");
 		Assert.assertNull(event.get("tags"));
 		Assert.assertNotNull(event.get("ua"));
@@ -43,11 +39,7 @@ public class TestUA {
 
 		event = UAfilter.process(event);
 		Assert.assertEquals(event.get("userAgent_family"), "Other");
-		Assert.assertNull(event.get("userAgent_major"));
-		Assert.assertNull(event.get("userAgent_minor"));
 		Assert.assertEquals(event.get("os_family"), "Other");
-		Assert.assertNull(event.get("os_major"));
-		Assert.assertNull(event.get("os_minor"));
 		Assert.assertEquals(event.get("device_family"), "Other");
 		Assert.assertNotNull(event.get("ua"));
 	}
