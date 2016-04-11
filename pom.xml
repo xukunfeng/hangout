@@ -9,6 +9,38 @@
 
     <name>hangout</name>
     <url>http://maven.apache.org</url>
+ <repositories>
+        <repository>
+            <id>nexus</id>
+            <name>nexus</name>
+            <url>http://mvn.gz.cvte.cn/nexus/content/groups/public/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+                <updatePolicy>always</updatePolicy>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>clojars.org</id>
+            <url>http://clojars.org/repo</url>
+        </repository>
+    </repositories>
+
+    <pluginRepositories>
+        <pluginRepository>
+            <id>nexus</id>
+            <name>nexus</name>
+            <url>http://mvn.gz.cvte.cn/nexus/content/groups/public/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </pluginRepository>
+    </pluginRepositories>
     <build>
         <resources>
             <resource>
@@ -67,12 +99,6 @@
         <testng-version>6.8.5</testng-version>
         <junit-version>4.12</junit-version>
     </properties>
-    <repositories>
-        <repository>
-            <id>clojars.org</id>
-            <url>http://clojars.org/repo</url>
-        </repository>
-    </repositories>
     <dependencies>
         <dependency>
             <groupId>org.apache.kafka</groupId>
@@ -145,7 +171,15 @@
             <artifactId>hamcrest-all</artifactId>
             <version>1.1</version>
             <scope>${hamcrest-version}</scope>
-    </dependency>
+        </dependency>
+        <dependency>
+            <groupId>redis.clients</groupId>
+            <artifactId>jedis</artifactId>
+            <version>2.7.2</version>
+            <type>jar</type>
+            <scope>compile</scope>
+        </dependency>
+
 
     </dependencies>
 </project>
