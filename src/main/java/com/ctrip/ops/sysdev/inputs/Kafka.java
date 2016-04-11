@@ -120,8 +120,9 @@ public class Kafka extends BaseInput {
 		}
 	}
 
-	public void emit() {
+	public void emit(int sampleCount) {
 		Map<String, List<KafkaStream<byte[], byte[]>>> consumerMap = null;
+
 
 		Map<String, Integer> topics = (Map<String, Integer>) this.config
 				.get("topic");

@@ -45,9 +45,11 @@ public class Main {
 		options.addOption("v", false, "print info log");
 		options.addOption("vv", false, "print debug log");
 		options.addOption("vvvv", false, "print trace log");
+		options.addOption("t", true, "sample time for debug");
 
 		CommandLineParser paraer = new BasicParser();
 		CommandLine cmdLine = paraer.parse(options, args);
+
 
 		if (cmdLine.hasOption("help") || cmdLine.hasOption("h")) {
 			usage();
@@ -74,7 +76,8 @@ public class Main {
 				.append("-w").append("\t\t\tfilter worker numbers").append("\n")
 				.append("-v").append("\t\t\tprint info log").append("\n")
 				.append("-vv").append("\t\t\tprint debug log").append("\n")
-				.append("-vvvv").append("\t\t\tprint trace log").append("\n");
+				.append("-vvvv").append("\t\t\tprint trace log").append("\n")
+				.append("-t").append("\t\t\tsample times for debug").append("\n");
 
 		System.out.println(helpInfo.toString());
 	}
@@ -88,7 +91,14 @@ public class Main {
 		Map configs = HangoutConfig.parse(cmdLine.getOptionValue("f"));
 		logger.debug(configs);
 
-
+		String t = cmdLine.getOptionValue("t");
+		Integer time ;
+		if( t == null){
+			time= -1;
+		}
+		else {
+			time = Integer.parseInt(t);
+		}
 		// for input in all_inputs
 		ArrayList<Map> inputs = (ArrayList<Map>) configs.get("inputs");
 
@@ -106,7 +116,7 @@ public class Main {
 						ArrayList.class, ArrayList.class);
 				BaseInput inputInstance = (BaseInput) ctor.newInstance(
 						inputConfig, configs.get("filters"), configs.get("outputs"));
-				inputInstance.emit();
+				inputInstance.emit(time);
 			}
 		}
 	}

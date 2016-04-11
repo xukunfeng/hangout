@@ -108,7 +108,7 @@ public abstract class BaseInput {
 
 	protected abstract void prepare();
 
-	public abstract void emit();
+	public abstract void emit(int t);
 
 	public void process(String message) {
 		Map<String, Object> event = this.decoder.decode(message);

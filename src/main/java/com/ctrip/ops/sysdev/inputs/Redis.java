@@ -36,6 +36,8 @@ public class Redis extends  BaseInput {
     private String redisHost ;
     private int redisPort;
     private ExecutorService executor;
+    private AtomicInteger count = new AtomicInteger(0);
+    private int sampleCount = -1;
 
     private JedisPool jedisPool ;
 
@@ -63,7 +65,7 @@ public class Redis extends  BaseInput {
         private BaseFilter[] filterProcessors;
         private BaseOutput[] outputProcessors;
 
-        private AtomicInteger count = new AtomicInteger(0);
+
         public Consumer(Redis redis) {
             this.jedisPool = redis.jedisPool;
             this.key = redis.key;
@@ -81,26 +83,41 @@ public class Redis extends  BaseInput {
                         List<String> message = null;
                         String m;
 
+                        if ( sampleCount > 0   && count.incrementAndGet() > sampleCount  ){
+                            break;
+                        }
+
                         message = jedis.blpop(0, key);
                         m = message.get(1);
 
                         logger.debug("Redis Input: get message:" + count.addAndGet(1));
 
                         try {
+
+                            long p1 = System.nanoTime();
                             Map<String, Object> event = this.decoder
                                     .decode(m);
+                            long p2 = System.nanoTime();
+                            String timeString;
+                            timeString =  "decode=" +( p2-p1)  + ",";
 
                             if (this.filterProcessors != null) {
                                 for (BaseFilter bf : filterProcessors) {
                                     if (event == null) {
                                         break;
                                     }
+                                    p1 = System.nanoTime();
                                     event = bf.process(event);
+                                    p2 = System.nanoTime();
+                                    timeString = timeString + bf.getClass().getName() + "=" + (p2-p1) + ",";
                                 }
                             }
                             if (event != null) {
                                 for (BaseOutput bo : outputProcessors) {
+                                    p1 = System.nanoTime();
                                     bo.process(event);
+                                    p2 = System.nanoTime();
+                                    timeString = timeString + bo.getClass().getName() + "=" + (p2-p1) + ",";
                                 }
                             }
                         } catch (Exception e) {
@@ -160,9 +177,13 @@ public class Redis extends  BaseInput {
     }
 
     @Override
-    public void emit() {
+    public void emit(int sampleCount) {
         this.jedisPool = new JedisPool(this.redisHost,this.redisPort);
 
+        this.sampleCount = sampleCount;
+        if( sampleCount > 0 ){
+            threadCount  = 1;
+        }
         executor = Executors.newFixedThreadPool(threadCount);
         for(int i = 0; i < threadCount; i++){
             executor.execute(new Consumer(this));
