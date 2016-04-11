@@ -5,6 +5,7 @@ import com.maxmind.geoip2.model.CityResponse;
 import com.maxmind.geoip2.record.City;
 import com.maxmind.geoip2.record.Country;
 import com.maxmind.geoip2.record.Location;
+import org.apache.commons.collections.map.LRUMap;
 import org.apache.log4j.Logger;
 
 import java.io.File;
@@ -29,10 +30,51 @@ public class IpIp extends BaseFilter {
             .getName());
     public IpIp(Map config) {
         super(config);
+        map =  new LRUMap(CACHE_SIZE);
     }
 
+    private static final int CACHE_SIZE = 1000;
     private String source;
     private String target;
+    private LRUMap map ;
+
+    static class Location {
+        public String country;
+        public String state;
+        public String city;
+
+        public Location(String country,String state,String city){
+            this.country = country;
+            this.state = state;
+            this.city = city;
+        }
+
+
+        public String getCountry() {
+            return country;
+        }
+
+        public void setCountry(String country) {
+            this.country = country;
+        }
+
+        public String getState() {
+            return state;
+        }
+
+        public void setState(String state) {
+            this.state = state;
+        }
+
+        public String getCity() {
+            return city;
+        }
+
+        public void setCity(String city) {
+            this.city = city;
+        }
+    }
+
     protected void prepare() {
 
         if (!config.containsKey("source")) {
@@ -62,26 +104,47 @@ public class IpIp extends BaseFilter {
     };
 
 
+
     @Override
     protected Map filter(final Map event) {
         if (event.containsKey(this.source)) {
 
             boolean success = true;
+            String ip = (String)event.get(this.source);
 
-            String[] strings = IpIp.find((String)event.get(this.source));
-
-
-            if( strings == null || strings.length < 3){
+            if(!isIP(ip)){
                 success = false;
             }
             else {
-                Map targetObj = new HashMap();
-                event.put(this.target, targetObj);
-                targetObj.put("country", strings[0]);
-                targetObj.put("state",strings[1]);
-                targetObj.put("city",strings[2]);
+
+                Location location;
+                synchronized (IpIp.class){
+                    location = (Location) map.get(ip);
+                }
+                if( location == null){
+
+                    location = IpIp.find(ip);
+                    synchronized (IpIp.class){
+                        map.put(ip,location);
+
+                    }
+                }
+                if(location == null){
+                    success = false;
+                }
+                else {
+                    Map targetObj = new HashMap();
+                    event.put(this.target, targetObj);
+                    targetObj.put("country", location.getCountry());
+                    targetObj.put("state",location.getState());
+                    targetObj.put("city", location.getCity());
+
+                }
 
             }
+
+
+
             this.postProcess(event, success);
         }
         return event;
@@ -141,7 +204,7 @@ public class IpIp extends BaseFilter {
         return ipAddress;
     }
 
-    public static String[] find(String ip) {
+    public static Location find(String ip) {
         if(!isIP(ip)){
             return null;
         }
@@ -171,7 +234,13 @@ public class IpIp extends BaseFilter {
             lock.unlock();
         }
 
-        return new String(areaBytes, Charset.forName("UTF-8")).split("\t", -1);
+        String[] arr =   new String(areaBytes, Charset.forName("UTF-8")).split("\t", -1);
+        if( arr == null || arr.length < 3){
+            return null;
+        }
+        else{
+            return new Location(arr[0] ,arr[1] ,arr[2]);
+        }
     }
 
     private static void watch() {

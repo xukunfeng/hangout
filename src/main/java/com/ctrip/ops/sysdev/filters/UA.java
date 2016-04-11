@@ -3,6 +3,7 @@ package com.ctrip.ops.sysdev.filters;
 import java.io.IOException;
 import java.util.Map;
 
+import ua_parser.CachingParser;
 import ua_parser.Parser;
 import ua_parser.Client;
 
@@ -26,7 +27,7 @@ public class UA extends BaseFilter {
 		this.source = (String) config.get("source");
 
 		try {
-			this.uaParser = new Parser();
+			this.uaParser = new CachingParser();
 		} catch (IOException e) {
 			logger.error(e);
 			e.printStackTrace();
@@ -41,11 +42,11 @@ public class UA extends BaseFilter {
 			Client c = uaParser.parse((String) event.get(this.source));
 
 			event.put("userAgent_family", c.userAgent.family);
-			event.put("userAgent_major", c.userAgent.major);
-			event.put("userAgent_minor", c.userAgent.minor);
+//			event.put("userAgent_major", c.userAgent.major);
+//			event.put("userAgent_minor", c.userAgent.minor);
 			event.put("os_family", c.os.family);
-			event.put("os_major", c.os.major);
-			event.put("os_minor", c.os.minor);
+//			event.put("os_major", c.os.major);
+//			event.put("os_minor", c.os.minor);
 			event.put("device_family", c.device.family);
 		}
 		return event;

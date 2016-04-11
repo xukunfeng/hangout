@@ -28,7 +28,7 @@ import ua_parser.UserAgent;
 public class CachingParser extends Parser {
 
   // TODO: Make configurable
-  private static final int       CACHE_SIZE     = 1000;
+  private static final int       CACHE_SIZE     = 5000;
 
   private Map<String, Client>    cacheClient    = null;
   private Map<String, UserAgent> cacheUserAgent = null;
@@ -39,6 +39,7 @@ public class CachingParser extends Parser {
 
   public CachingParser() throws IOException {
     super();
+    cacheClient = new LRUMap(CACHE_SIZE);
   }
 
   public CachingParser(InputStream regexYaml) {
@@ -53,15 +54,18 @@ public class CachingParser extends Parser {
     if (agentString == null) {
       return null;
     }
-    if (cacheClient == null) {
-      cacheClient = new LRUMap(CACHE_SIZE);
+    Client client;
+    synchronized (CachingParser.class){
+       client = cacheClient.get(agentString);
+
     }
-    Client client = cacheClient.get(agentString);
     if (client != null) {
       return client;
     }
     client = super.parse(agentString);
-    cacheClient.put(agentString, client);
+    synchronized (CachingParser.class){
+       cacheClient.put(agentString, client);
+    }
     return client;
   }
 
